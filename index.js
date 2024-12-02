@@ -7,25 +7,55 @@ dotenv.config();
 
 const app = express();
 app.use(express.json());
-const authmiddleware=async(req,res)=>{
+const authmiddleware=async(req,res,next)=>{
   const apikey="a1b2c3d4e5f67890123456789abcdef"
-  const authapikey=req.Headers['authapikey']
+  const authapikey=req.headers.shipping_secret_key
   console.log(authapikey)
-  if (!authapikey){
-      return res.status(404).json(
-          {error:"not found"}
-      )
-  }
   if (authapikey===apikey){
-      return {succes:true}
-  }
+      console.log("yes")
+      next()
+    }
   else{
-      return {succes:false}
+    return res.status(403).json({
+      error: "Failed to authenticate SHIPPING_SECRET_KEY"
+    })
   }
+  // if (!authapikey){
+  //     return res.status(404).json(
+  //         {error:"SHIPPING_SECRET_KEY is missing or invalid"}
+  //     )
+  // }
+  // if (authapikey===apikey){
+  //   console.log("yes")
+  //     return true
+  // }
+  // else{
+  //     return false
+  // }
 }
-authmiddleware();
-app.post('/api/shipping/create',async(req,res)=>{
+app.post('/api/shipping/create',authmiddleware,async(req,res)=>{
   const {userId, productId,count}=req.body
+  if(!userId){
+    return res.status(404).json(
+      {
+        error: "All fields required"
+      }
+    )
+  }
+  if(!productId){
+    return res.status(404).json(
+      {
+        error: "All fields required"
+      }
+    )
+  }
+  if(!count){
+    return res.status(404).json(
+      {
+        error: "All fields required"
+      }
+    )
+  }
   if(!userId || !prisma|| !count){
     return res.status(404).json(
       {
@@ -50,7 +80,7 @@ app.post('/api/shipping/create',async(req,res)=>{
       })
   }
 })
-app.put("/api/shipping/cancel",async(req,res)=>{
+app.put("/api/shipping/cancel",authmiddleware,async(req,res)=>{
   const {shippingId}=req.body
   if (!shippingId){
     return res.status(404).json({ 
@@ -85,16 +115,21 @@ app.put("/api/shipping/cancel",async(req,res)=>{
   }
 
 })
-app.get("/api/shipping/get",async(req,res)=>{
+app.get("/api/shipping/get",authmiddleware,async(req,res)=>{
   try{
-    const alltherecord=await prisma.shipping.findMany()
+    if(true){
+      const alltherecord=await prisma.shipping.findMany()
     console.log(alltherecord)
     return res.status(200).json(
       alltherecord
     )
-  }catch{}{
+    }
+    else{
+      throw new Error("Failed to authenticate SHIPPING_SECRET_KEY")
+    }
+  }catch(error){
     return res.status(500).json({
-      error:"Internal server error"
+      error:error
   })
   }
 })
