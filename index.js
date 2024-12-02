@@ -123,6 +123,22 @@ app.put("/api/shipping/cancel",authmiddleware,async(req,res)=>{
 
 })
 app.get("/api/shipping/get",authmiddleware,async(req,res)=>{
+  const userId =req.query.userId
+  if (userId){
+    const specific =await prisma.shipping.findMany()
+    console.log(specific)
+    const ans=[]
+    for(i=0;i<specific.length;i++){
+      console.log(specific[i].userId===Number(userId))
+      if (specific[i].userId==Number(userId)){
+        ans.push(specific[i])
+      }
+    }
+    console.log(ans)
+
+    return res.status(200).json(ans)
+  }
+
   try{
     if(true){
       const alltherecord=await prisma.shipping.findMany()
@@ -140,19 +156,7 @@ app.get("/api/shipping/get",authmiddleware,async(req,res)=>{
   })
   }
 })
-// app.get("/api/shipping/get?userId=:id",async(req,res)=>{
-//   const {id}=req.params;
-//   console.log(id)
-//   return res.status(200).json(
-//     id
-//   )
-//   // try{
-//   // }catch{}{
-//   //   return res.status(500).json({
-//   //     error:"Internal server error"
-//   // })
-//   // }
-// })
+
 
 
 
