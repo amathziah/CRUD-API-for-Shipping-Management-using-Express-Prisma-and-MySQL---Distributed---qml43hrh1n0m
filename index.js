@@ -10,6 +10,13 @@ app.use(express.json());
 const authmiddleware=async(req,res,next)=>{
   const apikey="a1b2c3d4e5f67890123456789abcdef"
   const authapikey=req.headers.shipping_secret_key
+  if (!authapikey){
+    return res.status(403).json(
+      { 
+        error: "SHIPPING_SECRET_KEY is missing or invalid"
+     }
+    )
+  }
   console.log(authapikey)
   if (authapikey===apikey){
       console.log("yes")
